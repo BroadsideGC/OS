@@ -8,7 +8,10 @@ ssize_t fprint(ssize_t fd){
    while ((cnt_r = read(fd, buff, sizeof(buff))) > 0){
        ssize_t cnt_w = write(STDOUT_FILENO, buff, cnt_r);
        if (cnt_w < cnt_r){
-         perror("Error during writing");
+         cnt_w = write(STDOUT_FILENO, buff + cnt_w, cnt_r - cnt_w);
+         if (cnt_w < 1){
+           perror("Error during writing");
+         }
          return -1;
        }
    }
