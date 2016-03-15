@@ -17,7 +17,7 @@ ssize_t fprint(ssize_t fd) {
         }
         while (cnt_w != cnt_r) {
             ssize_t cnt_cw = write(STDOUT_FILENO, buff + cnt_w, cnt_r - cnt_w);
-            if (cnt_w < 0) {
+            if (cnt_cw < 0) {
                 if (errno == EINTR) {
                     continue;
                 }
@@ -42,7 +42,6 @@ int main(int argc, char **argv) {
         }
         return 0;
     }
-    int i;
     for (int i = 1; i < argc; i++) {
         ssize_t fd;
         if ((fd = open(argv[i], O_RDONLY)) == -1) {
