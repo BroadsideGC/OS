@@ -10,7 +10,7 @@ void sig_handler(int signo, siginfo_t *siginfo, void *context)
 {
 
   pid_t pid = siginfo->si_pid;
-  printf("%s from %lu\n", (signo == SIGUSR1 ? "SIGUSR1" : "SIGUSR2"), (unsigned long) pid);
+  printf("%s from %d\n", (signo == SIGUSR1 ? "SIGUSR1" : "SIGUSR2"), (int) pid);
   exit(signo);
 }
 
