@@ -44,7 +44,7 @@ int make_tokens(char *string, char *sep, char *tokens[]) {
 }
 
 void process(char *commands[], int comm_cnt) {
-    char *parts[255];
+    char *parts[512];
     int fpipe[2];
     int spipe[2];
     int i;
@@ -85,12 +85,12 @@ void process(char *commands[], int comm_cnt) {
         fpipe[1] = spipe[1];
     }
    for (i=0;i<child_cnt;i++){
-     waitpid(childs[i],0,NULL);
-   } 
+     waitpid(childs[i], 0, 0);
+   }
 }
 
 int main() {
-    char buffer[4096];
+    char buffer[16384];
     struct sigaction sa;
     sa.sa_sigaction = &sig_handler;
     sa.sa_flags = SA_SIGINFO;
@@ -104,10 +104,9 @@ int main() {
         readed = read_buffer(STDIN_FILENO, buffer, sizeof(buffer));
         if (readed > 0) {
             memset(buffer + readed - 1, 0, sizeof(char));
-            char *commands[255];
+            char *commands[512];
             int comm_cnt = make_tokens(buffer, "|", commands);
             process(commands, comm_cnt);
         }
     }
 }
-
