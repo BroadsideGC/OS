@@ -21,16 +21,24 @@ void sig_handler(int signo, siginfo_t *siginfo, void *context) {
 }
 
 
-ssize_t read_buffer(int fd, void *buffer, size_t size) {
+char * read_string() {
+    char* string = malloc(sizeof(char));
+    char buffer[16384];
+    size_t size = sizeof(buffer);
     ssize_t total_read_cnt = 0;
     ssize_t read_cnt;
-    while (total_read_cnt < size && (read_cnt = read(fd, buffer + total_read_cnt, size - read_cnt)) > 0) {
+    while (total_read_cnt < size && (read_cnt = read(STDIN_FILENO, buffer + total_read_cnt, size - read_cnt)) > 0) {
         total_read_cnt += read_cnt;
+        char tmp[total_read_cnt];
+        memset(tmp, 0, sizeof(tmp));
+        strcat(tmp, string);
+        strcat(tmp, buffer);
+        string = tmp;
         if (*((char *) (buffer + total_read_cnt - 1)) == '\n') {
             break;
         }
     }
-    return total_read_cnt;
+    return string;
 }
 
 int make_tokens(char *string, char *sep, char *tokens[]) {
@@ -90,23 +98,18 @@ void process(char *commands[], int comm_cnt) {
 }
 
 int main() {
-    char buffer[16384];
     struct sigaction sa;
     sa.sa_sigaction = &sig_handler;
     sa.sa_flags = SA_SIGINFO;
     sigemptyset(&sa.sa_mask);
     if (sigaction(SIGINT, &sa, NULL) != 0)
         return errno;
-    ssize_t readed = 1;
     while (1) {
         write(1, "> ", 2);
-        memset(buffer, 0, sizeof(buffer));
-        readed = read_buffer(STDIN_FILENO, buffer, sizeof(buffer));
-        if (readed > 0) {
-            memset(buffer + readed - 1, 0, sizeof(char));
-            char *commands[512];
-            int comm_cnt = make_tokens(buffer, "|", commands);
-            process(commands, comm_cnt);
-        }
+        char * string = read_string();
+        memset(string + strlen(string)-1, 0, sizeof(char)*2);
+        char *commands[512];
+        int comm_cnt = make_tokens(string, "|", commands);
+        process(commands, comm_cnt);
     }
 }
