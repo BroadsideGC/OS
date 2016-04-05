@@ -64,7 +64,7 @@ void process(char *commands[], int comm_cnt) {
         }
         if (newpid == 0) {
             if (i > 0) {
-                dup2(fpipe[0], STDOUT_FILENO);
+                dup2(fpipe[0], STDIN_FILENO);
                 close(fpipe[0]);
                 close(fpipe[1]);
             }
