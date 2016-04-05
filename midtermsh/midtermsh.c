@@ -85,7 +85,9 @@ void process(char *commands[], int comm_cnt) {
         fpipe[0] = spipe[0];
         fpipe[1] = spipe[1];
     }
-   wait(NULL);
+   for (i=0;i<child_cnt;i++){
+     waitpid(childs[i],0,NULL);
+   } 
 }
 
 int main() {
