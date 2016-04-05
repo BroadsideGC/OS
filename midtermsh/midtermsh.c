@@ -99,6 +99,10 @@ void process(char *commands[], int comm_cnt) {
 
 int main() {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+    char buffer[4096];
+>>>>>>> parent of 2e39e1b... Biggest best
 =======
     char buffer[4096];
 >>>>>>> parent of 2e39e1b... Biggest best
