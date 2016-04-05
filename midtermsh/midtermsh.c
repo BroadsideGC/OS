@@ -18,7 +18,6 @@ void sig_handler(int signo, siginfo_t *siginfo, void *context) {
         kill(childs[i], signo);
         waitpid(childs[i], NULL, 0);
     }
-    exit(signo);
 }
 
 
