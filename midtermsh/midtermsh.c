@@ -64,11 +64,11 @@ void process(char *commands[], int comm_cnt) {
         }
         if (newpid == 0) {
             if (i > 0) {
-                dup2(fpipe[0], 0);
+                dup2(fpipe[0], STDOUT_FILENO);
                 close(fpipe[0]);
                 close(fpipe[1]);
             }
-            if (i != comm_cnt - 1) dup2(spipe[1], 1);
+            if (i != comm_cnt - 1) dup2(spipe[1], STDOUT_FILENO);
             close(spipe[0]);
             close(spipe[1]);
             execvp(parts[0], parts);
@@ -85,8 +85,8 @@ void process(char *commands[], int comm_cnt) {
         fpipe[0] = spipe[0];
         fpipe[1] = spipe[1];
     }
+   wait(NULL);
 }
-
 
 int main() {
     char buffer[4096];
