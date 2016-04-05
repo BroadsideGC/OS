@@ -21,24 +21,16 @@ void sig_handler(int signo, siginfo_t *siginfo, void *context) {
 }
 
 
-char * read_string() {
-    char* string = malloc(sizeof(char));
-    char buffer[16384];
-    size_t size = sizeof(buffer);
+ssize_t read_buffer(int fd, void *buffer, size_t size) {
     ssize_t total_read_cnt = 0;
     ssize_t read_cnt;
-    while (total_read_cnt < size && (read_cnt = read(STDIN_FILENO, buffer + total_read_cnt, size - read_cnt)) > 0) {
+    while (total_read_cnt < size && (read_cnt = read(fd, buffer + total_read_cnt, size - read_cnt)) > 0) {
         total_read_cnt += read_cnt;
-        char tmp[total_read_cnt];
-        memset(tmp, 0, sizeof(tmp));
-        strcat(tmp, string);
-        strcat(tmp, buffer);
-        string = tmp;
         if (*((char *) (buffer + total_read_cnt - 1)) == '\n') {
             break;
         }
     }
-    return string;
+    return total_read_cnt;
 }
 
 int make_tokens(char *string, char *sep, char *tokens[]) {
@@ -52,7 +44,7 @@ int make_tokens(char *string, char *sep, char *tokens[]) {
 }
 
 void process(char *commands[], int comm_cnt) {
-    char *parts[255];
+    char *parts[512];
     int fpipe[2];
     int spipe[2];
     int i;
@@ -93,43 +85,28 @@ void process(char *commands[], int comm_cnt) {
         fpipe[1] = spipe[1];
     }
    for (i=0;i<child_cnt;i++){
-     waitpid(childs[i],0,NULL);
-   } 
+     waitpid(childs[i], 0, 0);
+   }
 }
 
 int main() {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-    char buffer[4096];
->>>>>>> parent of 2e39e1b... Biggest best
-=======
-    char buffer[4096];
->>>>>>> parent of 2e39e1b... Biggest best
+    char buffer[16384];
     struct sigaction sa;
     sa.sa_sigaction = &sig_handler;
     sa.sa_flags = SA_SIGINFO;
     sigemptyset(&sa.sa_mask);
     if (sigaction(SIGINT, &sa, NULL) != 0)
         return errno;
+    ssize_t readed = 1;
     while (1) {
         write(1, "> ", 2);
-<<<<<<< HEAD
-        char * string = read_string();
-        memset(string + strlen(string)-1, 0, sizeof(char)*2);
-        char *commands[512];
-        int comm_cnt = make_tokens(string, "|", commands);
-        process(commands, comm_cnt);
-=======
         memset(buffer, 0, sizeof(buffer));
         readed = read_buffer(STDIN_FILENO, buffer, sizeof(buffer));
         if (readed > 0) {
             memset(buffer + readed - 1, 0, sizeof(char));
-            char *commands[255];
+            char *commands[512];
             int comm_cnt = make_tokens(buffer, "|", commands);
             process(commands, comm_cnt);
         }
->>>>>>> parent of 2e39e1b... Biggest best
     }
 }
-
