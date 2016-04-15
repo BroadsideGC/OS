@@ -40,7 +40,7 @@ def kernel(main, args, stdin):
                 processes.push((cont, [-1]))
                 continue
             inode ind = new ind(sargs[0])
-            ind.modes^=cont.umask
+            ind.modes = 777&(~(cont.umask))
             cont.fdtable[fd] = ((ind, 0))
             processes.push((cont, [fd]))
         else:
