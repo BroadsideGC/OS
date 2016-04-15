@@ -32,3 +32,4 @@
 *.dSYM/
 
 /pract
+*.db
