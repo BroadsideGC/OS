@@ -6,12 +6,15 @@
 #include <sys/types.h>
 #include <errno.h>
 
+char flag = 0;
 void sig_handler(int signo, siginfo_t *siginfo, void *context)
 {
-
-  pid_t pid = siginfo->si_pid;
-  printf("%s from %d\n", (signo == SIGUSR1 ? "SIGUSR1" : "SIGUSR2"), (int) pid);
-  exit(signo);
+  if (flag == 0){
+    flag = 1;
+    pid_t pid = siginfo->si_pid;
+    printf("Signal %d from %d\n", signo, (int) pid);
+    exit(signo);
+  }
 }
 
 int main(void){
@@ -26,6 +29,7 @@ int main(void){
     return errno;
   }
   sleep(10);
+  flag = 1;
   printf("No signals were caught\n");
   return 0;
 }
