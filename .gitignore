@@ -34,3 +34,7 @@
 /pract
 *.db
 *.json
+/simplesh/.idea
+simplesh/CMakeLists.txt
+/midtermsh/midtermsh
+/simplesh/simplesh

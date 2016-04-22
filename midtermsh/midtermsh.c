@@ -89,7 +89,7 @@ void process(char *commands[], int comm_cnt) {
    }
 }
 
-int main() {
+int main(void) {
     char buffer[16384];
     struct sigaction sa;
     sa.sa_sigaction = &sig_handler;
