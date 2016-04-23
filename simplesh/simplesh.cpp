@@ -55,9 +55,9 @@ string read_string() {
     return s;
 }
 
-vector<string> make_tokens(char *str, char *sep) {
+vector<char *> make_tokens(char *str, char *sep) {
     auto *token = strtok(str, sep);
-    vector<string> tokens;
+    vector<char *> tokens;
     while (token) {
         tokens.push_back(token);
         token = strtok(NULL, sep);
@@ -65,13 +65,11 @@ vector<string> make_tokens(char *str, char *sep) {
     return tokens;
 }
 
-void process(vector<string> &commands) {
+void process(vector<char *> &commands) {
     int fpipe[2];
     int spipe[2];
     for (auto i = 0; i < commands.size(); i++) {
-        auto parts = make_tokens(const_cast<char *>(commands[i].c_str()), (char *) " ");
-        if (commands[0] == "")
-            break;
+        auto parts = make_tokens(commands[i], (char *) " ");
         pipe(spipe);
         auto newpid = fork();
         if (newpid < 0) {
@@ -88,10 +86,8 @@ void process(vector<string> &commands) {
             if (i != commands.size() - 1) dup2(spipe[1], STDOUT_FILENO);
             close(spipe[0]);
             close(spipe[1]);
-            vector<const char *> args(parts.size());
-            transform(parts.begin(), parts.end(), args.begin(), mem_fun_ref(&string::c_str));
-            args.push_back(NULL);
-            if (execvp(args[0], (char *const *) args.data()) != 0) {
+            parts.push_back(NULL);
+            if (execvp(parts[0], parts.data()) != 0) {
                 childs.pop_back();
                 write(STDOUT_FILENO, "Command not found", 17);
                 raise(SIGINT);
@@ -110,8 +106,8 @@ void process(vector<string> &commands) {
         fpipe[0] = spipe[0];
         fpipe[1] = spipe[1];
     }
-    for (auto i = 0; i < childs.size(); i++) {
-        waitpid(childs[i], 0, 0);
+    for (auto child : childs) {
+        waitpid(child, 0, 0);
     }
 }
 
@@ -125,7 +121,7 @@ int main(void) {
     while (1) {
         write(STDOUT_FILENO, "$ ", 2);
         string str = read_string();
-        vector<string> commands = make_tokens(const_cast<char *>(str.c_str()), (char *) "|");
+        vector<char *> commands = make_tokens(const_cast<char *>(str.c_str()), (char *) "|");
         process(commands);
     }
 }
