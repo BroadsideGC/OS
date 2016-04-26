@@ -46,10 +46,7 @@ string read_string() {
         exit(0);
     }
 
-    for (auto i = 0; i < total_read_cnt; i++) {
-        if (buffer[i] == '\n') {
-            break;
-        }
+    for (auto i = 0; i < total_read_cnt - 1; i++) {
         s += string{buffer[i]};
     }
     return s;
