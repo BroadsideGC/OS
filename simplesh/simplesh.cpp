@@ -34,7 +34,7 @@ string read_string() {
     ssize_t total_read_cnt = 0;
     ssize_t read_cnt;
 
-    while ((read_cnt = read(STDIN_FILENO, buffer, sizeof(buffer))) > 0) {
+    while ((read_cnt = read(STDIN_FILENO, buffer+total_read_cnt, sizeof(char))) > 0) {
         total_read_cnt += read_cnt;
         if (*(buffer + total_read_cnt - 1) == '\n') {
             break;
@@ -121,6 +121,7 @@ int main(void) {
     while (1) {
         write(STDOUT_FILENO, "$ ", 2);
         string str = read_string();
+        cerr << str <<"\n";
         vector<char *> commands = make_tokens(const_cast<char *>(str.c_str()), (char *) "|");
         process(commands);
     }
