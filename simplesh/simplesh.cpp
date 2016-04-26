@@ -121,7 +121,6 @@ int main(void) {
     while (1) {
         write(STDOUT_FILENO, "$ ", 2);
         string str = read_string();
-        cerr << str <<"\n";
         vector<char *> commands = make_tokens(const_cast<char *>(str.c_str()), (char *) "|");
         process(commands);
     }
