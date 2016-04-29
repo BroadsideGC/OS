@@ -6,11 +6,7 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <string>
-#include <sys/types.h>
-#include <signal.h>
-#include <stdlib.h>
 #include <vector>
-#include <iostream>
 #include <algorithm>
 
 using namespace std;
@@ -27,30 +23,7 @@ void sig_handler(int signo, siginfo_t *siginfo, void *context) {
 }
 
 size_t BUFFER_SIZE = 8192;
-
-string read_string() {
-    string s = "";
-    char buffer[BUFFER_SIZE];
-    ssize_t total_read_cnt = 0;
-    ssize_t read_cnt;
-
-    while ((read_cnt = read(STDIN_FILENO, buffer+total_read_cnt, sizeof(char))) > 0) {
-        total_read_cnt += read_cnt;
-        if (*(buffer + total_read_cnt - 1) == '\n') {
-            break;
-        }
-    }
-
-    if (total_read_cnt == 0 && read_cnt == 0) {
-        raise(SIGINT);
-        exit(0);
-    }
-
-    for (auto i = 0; i < total_read_cnt - 1; i++) {
-        s += string{buffer[i]};
-    }
-    return s;
-}
+vector<string> tmp;
 
 vector<char *> make_tokens(char *str, char *sep) {
     auto *token = strtok(str, sep);
@@ -60,6 +33,55 @@ vector<char *> make_tokens(char *str, char *sep) {
         token = strtok(NULL, sep);
     }
     return tokens;
+}
+
+string read_string() {
+    string s = "";
+    if (!tmp.empty()) {
+        s = tmp[0];
+        tmp.erase(tmp.begin());
+    }
+    if (s.size() && s.back() == '\n') {
+        s.pop_back();
+        return s;
+    }
+    char buffer[BUFFER_SIZE];
+    ssize_t total_read_cnt = 0;
+    ssize_t read_cnt;
+
+    bool eol = 0;
+    while (!eol && (read_cnt = read(STDIN_FILENO, buffer + total_read_cnt, sizeof(buffer))) > 0) {
+        total_read_cnt += read_cnt;
+        for_each(buffer + total_read_cnt - read_cnt, buffer + total_read_cnt, [&](char &ch) {
+            if (ch == '\n') {
+                eol = 1;
+            }
+        });
+    }
+
+    if (total_read_cnt == 0 && read_cnt == 0 && !s.size()) {
+        raise(SIGINT);
+        exit(0);
+    }
+    string t = "";
+    for_each(buffer, buffer + total_read_cnt, [&](char &ch) {
+        t += ch;
+        if (ch == '\n') {
+            tmp.push_back(t);
+            t = "";
+        }
+    });
+    if (t.size()) {
+        tmp.push_back(t);
+    }
+    if (!tmp.empty()) {
+        s += tmp[0];
+        tmp.erase(tmp.begin());
+    }
+    if (s.size()) {
+        s.pop_back();
+    }
+    return s;
 }
 
 void process(vector<char *> &commands) {
@@ -86,8 +108,9 @@ void process(vector<char *> &commands) {
             parts.push_back(NULL);
             if (execvp(parts[0], parts.data()) != 0) {
                 childs.pop_back();
-                write(STDOUT_FILENO, "Command not found", 17);
-                raise(SIGINT);
+                if (errno == ENOENT) {
+                    perror(parts[0]);
+                }
                 exit(errno);
             }
         } else {
